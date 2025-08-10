@@ -1,0 +1,48 @@
+{% extends "layout.html" %}
+{% block title %}{{ action }} Expense - Expense Manager{% endblock %}
+{% block content %}
+<h2>{{ action }} Expense</h2>
+<form method="post" class="mt-3">
+    <div class="mb-3">
+        <label for="event_date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="event_date" name="event_date" required
+               value="{{ expense.event_date if expense else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="amount" class="form-label">Amount ($)</label>
+        <input type="number" step="0.01" class="form-control" id="amount" name="amount" required
+               value="{{ expense.amount if expense else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="name" class="form-label">Name (optional)</label>
+        <input type="text" class="form-control" id="name" name="name"
+               value="{{ expense.name if expense else '' }}">
+    </div>
+    <div class="mb-3">
+        <label for="category_id" class="form-label">Category</label>
+        <select id="category_id" class="form-select" name="category_id" >
+            <option value="" {% if not expense or not expense.category_id %}selected{% endif %}>-- None --</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}"
+                {% if expense and category.id == expense.category_id %}selected{% endif %}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="payment_type_id" class="form-label">Payment Type</label>
+        <select id="payment_type_id" class="form-select" name="payment_type_id">
+            <option value="" {% if not expense or not expense.payment_type_id %}selected{% endif %}>-- None --</option>
+            {% for ptype in payment_types %}
+                <option value="{{ ptype.id }}"
+                {% if expense and ptype.id == expense.payment_type_id %}selected{% endif %}>
+                    {{ ptype.name }}
+                </option>
+            {% endfor %}
+        </select>
+    </div>
+    <button type="submit" class="btn btn-primary">{{ action }}</button>
+    <a href="{{ url_for('expenses') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

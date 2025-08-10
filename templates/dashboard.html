@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+{% block title %}Dashboard - Expense Manager{% endblock %}
+{% block content %}
+<h2>Dashboard - {{ today[:7] }}</h2>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <h5>Monthly Total Expense</h5>
+        <div class="display-6 text-success">${{ '%.2f'|format(monthly_expense_total) }}</div>
+    </div>
+    <div class="col-md-4">
+        <h5>Top Day Expense</h5>
+        {% if top_day[0] %}
+            <p><strong>{{ top_day[0] }}</strong>: ${{ '%.2f'|format(top_day[1]) }}</p>
+        {% else %}
+            <p>No data</p>
+        {% endif %}
+    </div>
+    <div class="col-md-4">
+        <h5>Highest Single Expense</h5>
+        {% if high_expense %}
+            <p><strong>{{ high_expense.name or 'Unnamed' }} on {{ high_expense.event_date }}</strong>: ${{ '%.2f'|format(high_expense.amount) }}</p>
+        {% else %}
+            <p>No data</p>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h5>Daily Expenses</h5>
+        <canvas id="dailyExpensesChart"></canvas>
+    </div>
+    <div class="col-md-6 mb-4">
+        <h5>Expenses by Category</h5>
+        <canvas id="categoryExpensesChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Daily Expenses Chart
+    const dailyData = {
+        labels: {{ daily_expenses.keys()|list|tojson }},
+        datasets: [{
+            label: 'Daily Expenses ($)',
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgb(54, 162, 235)',
+            borderWidth: 1,
+            fill: true,
+            data: {{ daily_expenses.values()|list|tojson }},
+        }]
+    };
+
+    const dailyConfig = {
+        type: 'line',
+        data: dailyData,
+        options: {
+            scales: {
+                x: { title: { display: true, text: 'Date' } },
+                y: { title: { display: true, text: 'Amount ($)' }, beginAtZero: true }
+            },
+            responsive: true,
+        }
+    };
+
+    new Chart(
+        document.getElementById('dailyExpensesChart'),
+        dailyConfig
+    );
+
+    // Category Expenses Chart
+    const categoryData = {
+        labels: {{ category_expenses.keys()|list|tojson }},
+        datasets: [{
+            label: 'Expenses by Category',
+            data: {{ category_expenses.values()|list|tojson }},
+            backgroundColor: [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                '#858796', '#5a5c69', '#fd7e14', '#20c997', '#6f42c1'
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    const categoryConfig = {
+        type: 'doughnut',
+        data: categoryData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('categoryExpensesChart'),
+        categoryConfig
+    );
+</script>
+{% endblock %}
