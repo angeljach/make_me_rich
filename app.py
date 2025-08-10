@@ -183,6 +183,26 @@ def delete_expense(id):
     flash('Expense deleted.')
     return redirect(url_for('expenses'))
 
+@app.route('/expenses/copy/<int:id>', methods=['POST'])
+def copy_expense(id):
+    conn = get_db_connection()
+    expense = conn.execute('SELECT * FROM expenses WHERE id = ?', (id,)).fetchone()
+    if expense is None:
+        flash('Expense not found.', 'danger')
+        conn.close()
+        return redirect(url_for('expenses'))
+
+    # Insert a new expense copying all fields except id, created_at and updated_at will default or current
+    conn.execute('''
+        INSERT INTO expenses (event_date, amount, name, category_id, payment_type_id)
+        VALUES (?, ?, ?, ?, ?)
+    ''', (expense['event_date'], expense['amount'], expense['name'], expense['category_id'], expense['payment_type_id']))
+    conn.commit()
+    conn.close()
+
+    flash('Expense copied successfully.', 'success')
+    return redirect(url_for('expenses'))
+
 # Dashboard with graphs
 @app.route('/dashboard')
 def dashboard():
