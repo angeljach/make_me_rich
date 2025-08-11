@@ -206,19 +206,28 @@ def copy_expense(id):
 # Dashboard with graphs
 @app.route('/dashboard')
 def dashboard():
-    conn = get_db_connection()
+    # Extract year and month from query params or default current year/month
+    year = request.args.get('year', default=None, type=int)
+    month = request.args.get('month', default=None, type=int)
 
-    # Filter only current month expenses
-    today = date.today()
-    first_day = today.replace(day=1).isoformat()
+    from datetime import datetime
+    now = datetime.now()
+
+    if year is None:
+        year = now.year
+    if month is None:
+        month = now.month
+
+    conn = get_db_connection()
 
     expenses = conn.execute('''
         SELECT e.*, c.name as category_name
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
-        WHERE event_date >= ?
+        WHERE strftime("%Y", event_date) = ? AND strftime("%m", event_date) = ?
         ORDER BY event_date ASC
-    ''', (first_day,)).fetchall()
+        ''', (str(year), f"{month:02d}")
+    ).fetchall()
 
     # Prepare data for graphs:
 
@@ -250,12 +259,13 @@ def dashboard():
 
     conn.close()
     return render_template('dashboard.html',
+                           year=year,
+                           month=month,
                            daily_expenses=daily_expenses,
                            monthly_expense_total=monthly_expense_total,
                            category_expenses=category_expenses,
                            top_day=top_day,
-                           high_expense=high_expense,
-                           today=today.isoformat()
+                           high_expense=high_expense
                            )
 
 if __name__ == '__main__':
