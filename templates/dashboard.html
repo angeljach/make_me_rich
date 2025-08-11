@@ -6,7 +6,7 @@
 <form method="get" action="{{ url_for('dashboard') }}" class="mb-3 d-flex gap-2 align-items-center">
   <label for="year-select" class="form-label mb-0">Year:</label>
   <select id="year-select" name="year" class="form-select" style="width: auto;">
-    {% for y in range(2020, 2031) %}
+    {% for y in range(2025, 2041) %}
       <option value="{{ y }}" {% if y == year %}selected{% endif %}>{{ y }}</option>
     {% endfor %}
   </select>
