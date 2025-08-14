@@ -10,7 +10,6 @@
     <tr>
         <th>ID</th>
         <th>Name</th>
-        <th>Budgeted?</th>
         <th>Created At</th>
         <th></th>
     </tr>
@@ -20,7 +19,6 @@
     <tr>
         <td>{{ category.id }}</td>
         <td>{{ category.name }}</td>
-        <td>{{ 'Y' if category.is_budgeted else 'N' }}</td>
         <td>{{ category.created_at }}</td>
         <td>
             <a href="{{ url_for('edit_category', id=category.id) }}" class="btn btn-sm btn-warning">Edit</a>
