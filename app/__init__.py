@@ -6,7 +6,7 @@ def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='dev',  # Change this for production!
-        DATABASE=os.path.join(app.instance_path, 'expenses.db'),
+        SQLALCHEMY_DATABASE_URI='sqlite:///' + os.path.join(app.instance_path, 'expenses.db'),
     )
 
     if test_config is None:
@@ -22,8 +22,10 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    from . import db
+    from .db import db
     db.init_app(app)
+
+    from . import models
 
     from .routes import main, categories, expenses
     app.register_blueprint(main.bp)

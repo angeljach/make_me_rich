@@ -3,7 +3,9 @@ from flask import (
 )
 from collections import defaultdict
 from datetime import datetime
-from app.db import get_db
+from app.db import db
+from app.models import Expense, Category
+from sqlalchemy import extract
 
 bp = Blueprint('main', __name__)
 
@@ -23,36 +25,31 @@ def dashboard():
     if month is None:
         month = now.month
 
-    db = get_db()
-    base_query = '''
-        SELECT e.*, c.name as category_name, c.is_budgeted
-        FROM expenses e
-        LEFT JOIN categories c ON e.category_id = c.id
-        WHERE strftime("%Y", event_date) = ? AND strftime("%m", event_date) = ?
-    '''
-    params = [str(year), f"{month:02d}"]
+    query = Expense.query.join(Category, Expense.category_id == Category.id, isouter=True).filter(
+        extract('year', Expense.event_date) == year,
+        extract('month', Expense.event_date) == month
+    )
 
     if is_budgeted_filter == 'budgeted':
-        base_query += ' AND c.is_budgeted = 1'
+        query = query.filter(Category.is_budgeted == True)
     elif is_budgeted_filter == 'not_budgeted':
-        base_query += ' AND (c.is_budgeted = 0 OR c.is_budgeted IS NULL)'
+        query = query.filter((Category.is_budgeted == False) | (Category.is_budgeted == None))
 
-    base_query += ' ORDER BY event_date ASC'
-    expenses = db.execute(base_query, tuple(params)).fetchall()
+    expenses = query.order_by(Expense.event_date.asc()).all()
 
     daily_expenses = defaultdict(float)
     for exp in expenses:
-        daily_expenses[exp['event_date']] += exp['amount']
+        daily_expenses[exp.event_date.strftime('%Y-%m-%d')] += exp.amount
 
-    monthly_expense_total = sum(exp['amount'] for exp in expenses)
+    monthly_expense_total = sum(exp.amount for exp in expenses)
 
     category_expenses = defaultdict(float)
     for exp in expenses:
-        category = exp['category_name'] or 'Uncategorized'
-        category_expenses[category] += exp['amount']
+        category = exp.category.name if exp.category else 'Uncategorized'
+        category_expenses[category] += exp.amount
 
     top_day = max(daily_expenses.items(), key=lambda x: x[1]) if daily_expenses else (None, 0)
-    high_expense = max(expenses, key=lambda x: x['amount']) if expenses else None
+    high_expense = max(expenses, key=lambda x: x.amount) if expenses else None
 
     return render_template('dashboard.html',
                            year=year,

@@ -1,14 +1,14 @@
 from flask import (
     Blueprint, flash, redirect, render_template, request, url_for
 )
-from app.db import get_db
+from app.db import db
+from app.models import Category
 
 bp = Blueprint('categories', __name__, url_prefix='/categories')
 
 @bp.route('/')
 def index():
-    db = get_db()
-    categories = db.execute('SELECT * FROM categories ORDER BY name ASC').fetchall()
+    categories = Category.query.order_by(Category.name.asc()).all()
     return render_template('categories.html', categories=categories)
 
 @bp.route('/add', methods=('GET', 'POST'))
@@ -19,20 +19,16 @@ def add():
         if not name:
             flash('Category name is required!')
         else:
-            db = get_db()
-            db.execute('INSERT INTO categories (name, is_budgeted) VALUES (?, ?)', (name, is_budgeted))
-            db.commit()
+            new_category = Category(name=name, is_budgeted=is_budgeted)
+            db.session.add(new_category)
+            db.session.commit()
             flash('Category added successfully.')
             return redirect(url_for('categories.index'))
     return render_template('category_form.html', action='Add')
 
 @bp.route('/edit/<int:id>', methods=('GET', 'POST'))
 def edit(id):
-    db = get_db()
-    category = db.execute('SELECT * FROM categories WHERE id = ?', (id,)).fetchone()
-    if category is None:
-        flash('Category not found.')
-        return redirect(url_for('categories.index'))
+    category = Category.query.get_or_404(id)
 
     if request.method == 'POST':
         name = request.form['name'].strip()
@@ -40,8 +36,9 @@ def edit(id):
         if not name:
             flash('Category name is required!')
         else:
-            db.execute('UPDATE categories SET name = ?, is_budgeted = ? WHERE id = ?', (name, is_budgeted, id))
-            db.commit()
+            category.name = name
+            category.is_budgeted = is_budgeted
+            db.session.commit()
             flash('Category updated successfully.')
             return redirect(url_for('categories.index'))
 
@@ -49,8 +46,8 @@ def edit(id):
 
 @bp.route('/delete/<int:id>', methods=('POST',))
 def delete(id):
-    db = get_db()
-    db.execute('DELETE FROM categories WHERE id = ?', (id,))
-    db.commit()
+    category = Category.query.get_or_404(id)
+    db.session.delete(category)
+    db.session.commit()
     flash('Category deleted.')
     return redirect(url_for('categories.index'))
