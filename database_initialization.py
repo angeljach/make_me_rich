@@ -17,6 +17,7 @@ def init_db():
         CREATE TABLE IF NOT EXISTS categories (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
+            is_budgeted INTEGER NOT NULL DEFAULT 1,
             created_at TEXT DEFAULT CURRENT_TIMESTAMP
         )
     ''')
