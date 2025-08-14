@@ -30,11 +30,12 @@ def categories():
 def add_category():
     if request.method == 'POST':
         name = request.form['name'].strip()
+        is_budgeted = request.form.get('is_budgeted') == '1'
         if not name:
             flash('Category name is required!')
         else:
             conn = get_db_connection()
-            conn.execute('INSERT INTO categories (name) VALUES (?)', (name,))
+            conn.execute('INSERT INTO categories (name, is_budgeted) VALUES (?, ?)', (name, is_budgeted))
             conn.commit()
             conn.close()
             flash('Category added successfully.')
@@ -52,10 +53,11 @@ def edit_category(id):
 
     if request.method == 'POST':
         name = request.form['name'].strip()
+        is_budgeted = request.form.get('is_budgeted') == '1'
         if not name:
             flash('Category name is required!')
         else:
-            conn.execute('UPDATE categories SET name = ? WHERE id = ?', (name, id))
+            conn.execute('UPDATE categories SET name = ?, is_budgeted = ? WHERE id = ?', (name, is_budgeted, id))
             conn.commit()
             conn.close()
             flash('Category updated successfully.')
@@ -209,6 +211,7 @@ def dashboard():
     # Extract year and month from query params or default current year/month
     year = request.args.get('year', default=None, type=int)
     month = request.args.get('month', default=None, type=int)
+    is_budgeted_filter = request.args.get('is_budgeted_filter', default='all')
 
     from datetime import datetime
     now = datetime.now()
@@ -220,14 +223,22 @@ def dashboard():
 
     conn = get_db_connection()
 
-    expenses = conn.execute('''
-        SELECT e.*, c.name as category_name
+    base_query = '''
+        SELECT e.*, c.name as category_name, c.is_budgeted
         FROM expenses e
         LEFT JOIN categories c ON e.category_id = c.id
         WHERE strftime("%Y", event_date) = ? AND strftime("%m", event_date) = ?
-        ORDER BY event_date ASC
-        ''', (str(year), f"{month:02d}")
-    ).fetchall()
+    '''
+    params = [str(year), f"{month:02d}"]
+
+    if is_budgeted_filter == 'budgeted':
+        base_query += ' AND c.is_budgeted = 1'
+    elif is_budgeted_filter == 'not_budgeted':
+        base_query += ' AND (c.is_budgeted = 0 OR c.is_budgeted IS NULL)'
+
+    base_query += ' ORDER BY event_date ASC'
+
+    expenses = conn.execute(base_query, tuple(params)).fetchall()
 
     # Prepare data for graphs:
 
@@ -265,7 +276,8 @@ def dashboard():
                            monthly_expense_total=monthly_expense_total,
                            category_expenses=category_expenses,
                            top_day=top_day,
-                           high_expense=high_expense
+                           high_expense=high_expense,
+                           is_budgeted_filter=is_budgeted_filter
                            )
 
 if __name__ == '__main__':

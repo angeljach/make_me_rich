@@ -18,6 +18,13 @@
     {% endfor %}
   </select>
 
+  <label for="is-budgeted-select" class="form-label mb-0">Budget Status:</label>
+  <select id="is-budgeted-select" name="is_budgeted_filter" class="form-select" style="width: auto;">
+    <option value="all" {% if is_budgeted_filter == 'all' %}selected{% endif %}>All</option>
+    <option value="budgeted" {% if is_budgeted_filter == 'budgeted' %}selected{% endif %}>Budgeted</option>
+    <option value="not_budgeted" {% if is_budgeted_filter == 'not_budgeted' %}selected{% endif %}>Not Budgeted</option>
+  </select>
+
   <button type="submit" class="btn btn-primary">Update</button>
 </form>
 
