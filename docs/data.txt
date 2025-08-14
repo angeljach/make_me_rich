@@ -6,6 +6,7 @@ created_at,datetime
 [categories]
 id,serial
 name,varchar
+is_budgeted,integer
 created_at,datetime
 
 [expenses]
@@ -17,3 +18,5 @@ category_id,integer
 payment_type_id,integer
 created_at,datetime
 updated_at,datetime
+
+[properties]
