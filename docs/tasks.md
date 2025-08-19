@@ -12,7 +12,7 @@ This document contains a prioritized list of tasks for improving the Expense Man
 ## Architecture and Structure
 
 1. [X] Refactor the application to use a proper project structure (separate routes, models, templates)
-2. [ ] Implement a database abstraction layer or ORM (SQLAlchemy) instead of raw SQL queries
+2. [X] Implement a database abstraction layer or ORM (SQLAlchemy) instead of raw SQL queries
 3. [ ] Create configuration management for different environments (development, testing, production)
 4. [ ] Implement proper error handling and logging throughout the application
 5. [ ] Move database connection logic to a dedicated module
