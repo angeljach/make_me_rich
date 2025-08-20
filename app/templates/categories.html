@@ -21,7 +21,7 @@
         <td>{{ category.id }}</td>
         <td>{{ category.name }}</td>
         <td>{{ 'Y' if category.is_budgeted else 'N' }}</td>
-        <td>{{ category.created_at }}</td>
+        <td>{{ category.created_at.strftime('%Y-%m-%d %H:%M:%S') if category.created_at else '' }}</td>
         <td>
             <a href="{{ url_for('categories.edit', id=category.id) }}" class="btn btn-sm btn-warning">Edit</a>
             <form action="{{ url_for('categories.delete', id=category.id) }}" method="post" class="d-inline"

@@ -11,3 +11,8 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["app"]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.2",
+]
