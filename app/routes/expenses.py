@@ -12,10 +12,15 @@ bp = Blueprint('expenses', __name__, url_prefix='/expenses')
 def index():
     page = request.args.get('page', 1, type=int)
     per_page = 20
-    expenses = Expense.query.options(joinedload(Expense.category), joinedload(Expense.payment_type)).order_by(Expense.event_date.desc()).paginate(page=page, per_page=per_page, error_out=False)
-    categories = Category.query.order_by(Category.name.asc()).all()
-    payment_types = PaymentType.query.order_by(PaymentType.name.asc()).all()
-    return render_template('expenses.html', expenses=expenses, categories=categories, payment_types=payment_types)
+    expenses = (Expense.query.options(
+        joinedload(Expense.category),
+        joinedload(Expense.payment_type)
+    ).order_by(
+        Expense.event_date.desc())
+                .paginate(page=page, per_page=per_page, error_out=False))
+    return render_template(
+        'expenses.html',
+        expenses=expenses)
 
 @bp.route('/add', methods=('GET', 'POST'))
 def add():
