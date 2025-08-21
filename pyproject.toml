@@ -15,4 +15,5 @@ packages = ["app"]
 [project.optional-dependencies]
 test = [
     "pytest>=8.3.2",
+    "pylint>=3.2.5",
 ]
