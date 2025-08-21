@@ -61,6 +61,12 @@
         <canvas id="categoryExpensesChart"></canvas>
     </div>
 </div>
+<div class="row">
+    <div class="col-md-6 mb-4">
+        <h5>Expenses by Payment Type</h5>
+        <canvas id="paymentTypeExpensesChart"></canvas>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -123,6 +129,36 @@
     new Chart(
         document.getElementById('categoryExpensesChart'),
         categoryConfig
+    );
+
+    // Payment Type Expenses Chart
+    const paymentTypeData = {
+        labels: {{ payment_type_expenses.keys()|list|tojson }},
+        datasets: [{
+            label: 'Expenses by Payment Type',
+            data: {{ payment_type_expenses.values()|list|tojson }},
+            backgroundColor: [
+                '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b',
+                '#858796', '#5a5c69', '#fd7e14', '#20c997', '#6f42c1'
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    const paymentTypeConfig = {
+        type: 'pie',
+        data: paymentTypeData,
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'bottom' }
+            }
+        }
+    };
+
+    new Chart(
+        document.getElementById('paymentTypeExpensesChart'),
+        paymentTypeConfig
     );
 </script>
 {% endblock %}
